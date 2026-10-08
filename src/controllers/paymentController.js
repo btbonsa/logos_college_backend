@@ -79,29 +79,7 @@ async function createPayment(req, res) {
     }
 }
 
-async function getPayments(req, res) {
-    try {
-        const studentUserId = req.user.id;
 
-        const [payments] = await db.query(`SELECT p.id, p.registration_id, p.payment_method, p.amount, p.transaction_references, p.screenShoot_url, p.status, p.created_at, pr.name AS program_name
-        FROM payments p
-        INNER JOIN registrations r ON p.registration_id = r.id
-        INNER JOIN students s ON r.student_id = s.id
-        INNER JOIN program pr ON r.program_id = pr.id
-        WHERE s.user_id = ?
-        ORDER BY p.created_at DESC`, [studentUserId]);
 
-        return res.status(200).json({
-            success: true,
-            count: payments.length,
-            data: payments
-        });
-
-    } catch (error) {
-        console.error("Get payments error:", error);
-        return res.status(500).json({ message: "Failed to fetch payments", error: error.message });
-    }
-}
-
-module.exports = { createPayment , getPayments };
+module.exports = { createPayment  };
 

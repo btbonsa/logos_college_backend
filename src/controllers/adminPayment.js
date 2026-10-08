@@ -62,6 +62,61 @@ async function getPendingPayment(req, res) {
 
 
 
+async function getAllPayments(req, res) {
+  try {
+    const [payments] = await db.query(`
+      SELECT
+        p.id,
+        p.registration_id,
+        p.amount,
+        p.payment_method,
+        p.transaction_references,
+        p.screenShoot_url,
+        p.status,
+        p.created_at,
+        p.rejected_reason AS rejection_reason,
+
+        r.registration_number,
+        r.status AS registration_status,
+
+        s.id AS student_id,
+        s.first_name,
+        s.last_name,
+
+        u.email,
+        u.phone,
+
+        pr.id AS program_id,
+        pr.name AS program_name
+
+      FROM payments p
+
+      INNER JOIN registrations r
+        ON p.registration_id = r.id
+
+      INNER JOIN students s
+        ON r.student_id = s.id
+
+      INNER JOIN users u
+        ON s.user_id = u.id
+
+      INNER JOIN program pr
+        ON r.program_id = pr.id
+
+      ORDER BY p.created_at DESC
+    `);
+
+    return res.status(200).json({
+      success: true,
+      count: payments.length,
+      payments,
+    });
+  } catch (error) {
+    console.error('Get all payments error:', error);
+    return res.status(500).json({ message: 'Failed to fetch payments', error: error.message });
+  }
+}
+
 async function reviewPayment(req, res) {
 
   const connection = await db.getConnection();
@@ -143,4 +198,4 @@ async function reviewPayment(req, res) {
 
 }
 
-module.exports = { getPendingPayment, reviewPayment };
+module.exports = { getPendingPayment, reviewPayment, getAllPayments };
