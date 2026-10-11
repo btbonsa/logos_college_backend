@@ -34,4 +34,54 @@ async function createStudentProfile(req, res) {
     }
 }
 
-module.exports = { createStudentProfile };
+
+async function getAllStudents(req, res) {
+    try{
+        const { program_name, registration_number } = req.query;
+
+        let query = `
+            SELECT
+                s.id,
+                s.user_id,
+                s.first_name,
+                s.last_name,
+                s.gender,
+                s.date_of_birth,
+                r.registration_number,
+                r.status AS registration_status,
+                p.name AS program_name,
+                p.description AS program_description,
+                p.duration AS program_duration,
+                p.monthly_fee AS program_fee
+            FROM students s
+            LEFT JOIN registrations r ON s.id = r.student_id
+            LEFT JOIN program p ON r.program_id = p.id
+            WHERE 1=1
+        `;
+
+        const params = [];
+
+        if (program_name) {
+            query += " AND p.name LIKE ?";
+            params.push(`%${program_name}%`);
+        }
+
+        if (registration_number) {
+            query += " AND r.registration_number LIKE ?";
+            params.push(`%${registration_number}%`);
+        }
+
+        query += " ORDER BY s.id DESC";
+
+        const [students] = await db.execute(query, params);
+        return res.status(200).json(students);
+
+    }catch(error){
+        console.error("get all students error:", error.message, error.sqlMessage);
+        return res.status(500).json({ message: "failed to fetch students", error: error.message, sqlMessage: error.sqlMessage });
+    }
+
+
+}
+
+module.exports = { createStudentProfile, getAllStudents };

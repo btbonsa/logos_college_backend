@@ -29,16 +29,16 @@ async function getPendingPayment(req, res) {
 
       FROM payments p
 
-      INNER JOIN registrations r
+      LEFT JOIN registrations r
         ON p.registration_id = r.id
 
-      INNER JOIN students s
+      LEFT JOIN students s
         ON r.student_id = s.id
 
-      INNER JOIN users u
+      LEFT JOIN users u
         ON s.user_id = u.id
 
-      INNER JOIN program pr
+      LEFT JOIN program pr
         ON r.program_id = pr.id
 
       WHERE p.status = 'PENDING'
