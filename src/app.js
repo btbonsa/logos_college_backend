@@ -66,12 +66,7 @@ app.use(limiter);
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:5000',
-      'https://student-portal-nine-delta.vercel.app',
-      'https://admin-portal-nine-delta.vercel.app'
-    ];
+  ];
 
 app.use(cors({
   origin: function (origin, callback) {
