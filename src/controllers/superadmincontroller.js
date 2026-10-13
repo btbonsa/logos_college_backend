@@ -1,4 +1,5 @@
 const pool = require("../config/db");
+const { hash_password } = require('../utils/password');
 
 async function  getDashboardStats(req, res) {
   try {
@@ -198,6 +199,68 @@ async function  getDashboardStats(req, res) {
   }
 };
 
+async function createAdmin(req, res) {
+  const connection = await pool.getConnection();
+  try {
+    const { phone, email, password } = req.body;
+
+    if (!phone || !email || !password) {
+      return res.status(400).json({ message: "phone, email and password are required" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: "password must be at least 6 characters long" });
+    }
+
+    await connection.beginTransaction();
+
+    const [existingUser] = await connection.query(
+      "SELECT id FROM users WHERE email = ? OR phone = ?",
+      [email, phone]
+    );
+
+    if (existingUser.length > 0) {
+      await connection.rollback();
+      return res.status(400).json({ message: "user with this email or phone number already exists" });
+    }
+
+    const passwordHash = await hash_password(password);
+
+    const [result] = await connection.query(
+      "INSERT INTO users (phone, email, hash_password, role, status) VALUES (?, ?, ?, 'ADMIN', 'ACTIVE')",
+      [phone, email, passwordHash]
+    );
+
+    const adminId = result.insertId;
+
+    await connection.commit();
+
+    return res.status(201).json({
+      success: true,
+      message: "admin created successfully",
+      admin: {
+        id: adminId,
+        phone,
+        email,
+        role: "ADMIN",
+        status: "ACTIVE"
+      }
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error("Create admin error:", error.message, error.sqlMessage);
+    return res.status(500).json({
+      success: false,
+      message: "failed to create admin",
+      error: error.message,
+      sqlMessage: error.sqlMessage
+    });
+  } finally {
+    connection.release();
+  }
+}
+
 module.exports = {
   getDashboardStats,
+  createAdmin,
 };

@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { notifyAdmins } = require('../utils/notifications');
 
 
 
@@ -42,9 +43,22 @@ async function createRegistration(req, res) {
 
         const registrationNumber = `REG-${Date.now()}-${studentId}`;
 
-        const [result] = await connection.query("INSERT INTO registrations (student_id, program_id, registration_number, status) VALUES (?, ?, ?, 'PENDING')", [studentId, program_id, registrationNumber]);
+const [result] = await connection.query(
+    `INSERT INTO registrations
+        (student_id, program_id, registration_number, status)
+     VALUES (?, ?, ?, 'PENDING')`,
+    [studentId, program_id, registrationNumber]
+);
 
-        await connection.commit();
+await notifyAdmins({
+    title: 'New student registration',
+    message: `Registration ${registrationNumber} requires attention.`,
+    type: 'NEW_REGISTRATION',
+    registrationId: result.insertId,
+    connection,
+});
+
+await connection.commit();
         return res.status(201).json({
             message: "student registered successfully", registration: {
                 id: result.insertId,

@@ -4,6 +4,7 @@ const router = express.Router();
 
 const {
   getDashboardStats,
+  createAdmin,
 } = require("../controllers/superadmincontroller");
 
 
@@ -15,6 +16,13 @@ router.get(
   authenticate,
   authorizeRole("SUPER_ADMIN"),
   getDashboardStats
+);
+
+router.post(
+  "/create-admin",
+  authenticate,
+  authorizeRole("SUPER_ADMIN"),
+  createAdmin
 );
 
 
