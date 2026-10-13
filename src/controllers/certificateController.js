@@ -5,7 +5,7 @@ const QRCode = require('qrcode');
 const pool = require('../config/db');
 
 const publicBackendUrl = (
-    process.env.BACKEND_PUBLIC_URL || 'http://localhost:5000'
+    process.env.BACKEND_PUBLIC_URL
 ).replace(/\/+$/, '');
 
 function isValidDate(value) {
@@ -197,7 +197,7 @@ async function downloadCertificatePdf(req, res) {
         }
 
         const portfolioBaseUrl = (
-            process.env.PUBLIC_PORTFOLIO_URL || 'http://localhost:3000'
+            process.env.PUBLIC_PORTFOLIO_URL
         ).replace(/\/+$/, '');
 
         if (!certificate.portfolio_slug) {
