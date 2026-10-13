@@ -29,19 +29,35 @@ app.use(helmet());
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // limit each IP to 1000 requests per windowMs (increased for proxy scenarios)
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for requests from trusted proxies (Vercel, etc.)
+    const trustedProxies = process.env.TRUSTED_PROXIES
+      ? process.env.TRUSTED_PROXIES.split(',')
+      : [];
+    const clientIp = req.ip || req.connection.remoteAddress;
+    return trustedProxies.includes(clientIp);
+  },
 });
 
 // Stricter rate limiting for auth endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 auth requests per windowMs
+  max: 50, // limit each IP to 50 auth requests per windowMs (increased for proxy scenarios)
   message: 'Too many authentication attempts, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for requests from trusted proxies (Vercel, etc.)
+    const trustedProxies = process.env.TRUSTED_PROXIES
+      ? process.env.TRUSTED_PROXIES.split(',')
+      : [];
+    const clientIp = req.ip || req.connection.remoteAddress;
+    return trustedProxies.includes(clientIp);
+  },
 });
 
 app.use(limiter);
@@ -49,7 +65,13 @@ app.use(limiter);
 // CORS configuration
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5000'];
+  : [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:5000',
+      'https://student-portal-nine-delta.vercel.app',
+      'https://admin-portal-nine-delta.vercel.app'
+    ];
 
 app.use(cors({
   origin: function (origin, callback) {

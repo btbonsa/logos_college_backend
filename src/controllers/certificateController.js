@@ -77,6 +77,7 @@ async function getAllCertificates(req, res) {
                 c.issue_date,
                 c.status,
                 c.created_at,
+                CONCAT(s.first_name, ' ', s.last_name) AS student_name,
                 s.first_name,
                 s.last_name,
                 r.registration_number,
