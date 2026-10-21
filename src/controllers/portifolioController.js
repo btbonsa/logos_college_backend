@@ -11,7 +11,6 @@ function makeSlug(registrationNumber) {
     return `${base}-${crypto.randomBytes(8).toString('hex')}`;
 }
 
-// ADMIN: Get all portfolios
 async function getAllPortfolios(req, res) {
     try {
         const [rows] = await db.execute(`
@@ -41,7 +40,6 @@ async function getAllPortfolios(req, res) {
     }
 }
 
-// ADMIN: Create a portfolio for an existing registration
 async function createPortfolio(req, res) {
     try {
         const { registration_id, title, bio_override } = req.body;
@@ -113,7 +111,6 @@ async function createPortfolio(req, res) {
     }
 }
 
-// ADMIN: Update portfolio details
 async function updatePortfolio(req, res) {
     try {
         const { id } = req.params;
@@ -159,7 +156,6 @@ async function updatePortfolio(req, res) {
     }
 }
 
-// ADMIN: Publish a portfolio
 async function publishPortfolio(req, res) {
     try {
         const { id } = req.params;
@@ -187,7 +183,6 @@ async function publishPortfolio(req, res) {
     }
 }
 
-// ADMIN: Unpublish a portfolio
 async function unpublishPortfolio(req, res) {
     try {
         const { id } = req.params;
@@ -215,7 +210,6 @@ async function unpublishPortfolio(req, res) {
     }
 }
 
-// ADMIN: Add a project to a portfolio
 async function addProject(req, res) {
     const connection = await db.getConnection();
     let cloudinaryResult = null;
@@ -306,7 +300,6 @@ async function addProject(req, res) {
     }
 }
 
-// ADMIN: Update a project
 async function updateProject(req, res) {
     const connection = await db.getConnection();
     let cloudinaryResult = null;
@@ -358,7 +351,6 @@ async function updateProject(req, res) {
             fields.push('image_url = ?');
             values.push(cloudinaryResult.url);
 
-            // Delete old image if exists
             const [existingProject] = await connection.query(
                 'SELECT image_url FROM portfolio_projects WHERE id = ?',
                 [projectId]
@@ -413,7 +405,6 @@ async function updateProject(req, res) {
     }
 }
 
-// ADMIN: Delete a project
 async function deleteProject(req, res) {
     try {
         const { projectId } = req.params;
@@ -438,7 +429,6 @@ async function deleteProject(req, res) {
     }
 }
 
-// PUBLIC: View a published portfolio
 async function getPublicPortfolio(req, res) {
     try {
         const { slug } = req.params;

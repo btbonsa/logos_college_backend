@@ -3,13 +3,11 @@ const { hash_password } = require('../utils/password');
 
 async function  getDashboardStats(req, res) {
   try {
-    // Total students
     const [[studentStats]] = await pool.execute(`
       SELECT COUNT(*) AS total_students
       FROM students
     `);
 
-    // Registration statistics
     const [[registrationStats]] = await pool.execute(`
       SELECT
         COUNT(*) AS total_registrations,
@@ -49,7 +47,6 @@ async function  getDashboardStats(req, res) {
       FROM registrations
     `);
 
-    // Payment statistics
     const [[paymentStats]] = await pool.execute(`
       SELECT
         COUNT(*) AS total_payments,
@@ -92,7 +89,6 @@ async function  getDashboardStats(req, res) {
       FROM payments
     `);
 
-    // Program statistics
     const [[programStats]] = await pool.execute(`
       SELECT
         COUNT(*) AS total_programa,

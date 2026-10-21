@@ -9,36 +9,49 @@ async function signup(req, res) {
     try {
         const { phone, email, password } = req.body;
 
-        if (!phone || !email || !password) {
-            return res.status(400).json({ message: "all fields are required" });
+        if (!email || !password) {
+            return res.status(400).json({ message: "email and password are required" });
         }
         if (password.length < 6) {
             return res.status(400).json({ message: "password must be at least 6 characters long" });
         }
 
+        const userRole = 'STUDENT';
+
         await connection.beginTransaction();
 
-        const [existingUser] = await connection.query("SELECT id FROM users WHERE email = ? OR phone = ?", [email, phone]);
+        const [existingUser] = await connection.query("SELECT id FROM users WHERE email = ?", [email]);
 
         if (existingUser.length > 0) {
             await connection.rollback();
-            return res.status(400).json({ message: "user with this email or phone number already exists" });
+            return res.status(400).json({ message: "user with this email already exists" });
         };
+
+        if (phone) {
+            const [existingPhone] = await connection.query("SELECT id FROM users WHERE phone = ?", [phone]);
+            if (existingPhone.length > 0) {
+                await connection.rollback();
+                return res.status(400).json({ message: "user with this phone number already exists" });
+            }
+        }
 
         const passwordHash = await hash_password(password);
 
-        const [result] = await connection.query("INSERT INTO users (phone, email, hash_password, role, status) VALUES (?, ?, ?, 'STUDENT', 'ACTIVE')", [phone, email, passwordHash]);
+        const [result] = await connection.query(
+            "INSERT INTO users (phone, email, hash_password, role, status) VALUES (?, ?, ?, ?, 'ACTIVE')",
+            [phone || null, email, passwordHash, userRole]
+        );
 
         const userId = result.insertId;
 
-        const token = generateToken({ id: userId, role: "STUDENT" });
+        const token = generateToken({ id: userId, role: userRole });
 
         await connection.commit();
 
         return res.status(201).json({
             message: "user registered successfully",
             token,
-            user: { id: userId, phone, email, role: "STUDENT" }
+            user: { id: userId, phone, email, role: userRole }
         });
     } catch (error) {
         await connection.rollback();

@@ -10,6 +10,7 @@ const authRoute = require('./routes/authroutes');
 const adminAuthRoute = require('./routes/adminAuthRoutes');
 const studentRoute = require('./routes/studentroute');
 const registrationRoute = require('./routes/registrationmiddleware');
+const adminRegistrationRoute = require('./routes/adminRegistrationRoute');
 const paymentRoute = require('./routes/paymentroutes');
 const adminPaymentRoute = require('./routes/adminpaymentroute');
 const classScheduleRoute = require('./routes/classScheduleRoute');
@@ -18,51 +19,29 @@ const programRoute = require('./routes/programs');
 const portfolioRoute = require('./routes/portifolioroute');
 const certificateRoutes = require('./routes/certificateRoutes');
 const notificationRoute = require('./routes/notificationRoutes');
+const cleanupRoute = require('./routes/cleanupRoute');
 
 const app = express();
 
-const PORT = process.env.PORT;
-
-// Security middleware
 app.use(helmet());
 
-// Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 1000 requests per windowMs (increased for proxy scenarios)
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => {
-    // Skip rate limiting for requests from trusted proxies (Vercel, etc.)
-    const trustedProxies = process.env.TRUSTED_PROXIES
-      ? process.env.TRUSTED_PROXIES.split(',')
-      : [];
-    const clientIp = req.ip || req.connection.remoteAddress;
-    return trustedProxies.includes(clientIp);
-  },
 });
 
-// Stricter rate limiting for auth endpoints
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // limit each IP to 50 auth requests per windowMs (increased for proxy scenarios)
-  message: 'Too many authentication attempts, please try again later.',
+  windowMs: 15 * 60 * 1000, 
+  max: 50,   message: 'Too many authentication attempts, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => {
-    // Skip rate limiting for requests from trusted proxies (Vercel, etc.)
-    const trustedProxies = process.env.TRUSTED_PROXIES
-      ? process.env.TRUSTED_PROXIES.split(',')
-      : [];
-    const clientIp = req.ip || req.connection.remoteAddress;
-    return trustedProxies.includes(clientIp);
-  },
 });
 
 app.use(limiter);
 
-// CORS configuration
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : [
@@ -70,7 +49,6 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.indexOf(origin) !== -1) {
@@ -108,7 +86,7 @@ app.get('/health', async (req, res) => {
             status: "ERROR",
             server: "running",
             database: "not connected",
-            error: error.message
+            error: "Database connection failed"
         });
     }
 });
@@ -117,6 +95,7 @@ app.use('/api/auth', authLimiter, authRoute);
 app.use('/api/admin/auth', authLimiter, adminAuthRoute);
 app.use('/api/students', studentRoute);
 app.use('/api/registration', registrationRoute);
+app.use('/api/admin', adminRegistrationRoute);
 app.use('/api/payments', paymentRoute);
 app.use('/api/admin', adminPaymentRoute);
 app.use('/api/classes', classScheduleRoute);
@@ -125,11 +104,6 @@ app.use('/api/programs', programRoute);
 app.use('/api/portfolios', portfolioRoute);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/notifications', notificationRoute);
+app.use('/api/cleanup', cleanupRoute);
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`server started on ${PORT}`)
-});
 module.exports = app;
-
-
-

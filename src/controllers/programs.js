@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 async function getPublicprograms(req, res) {
     try {
-        const [programs] = await db.query("SELECT id, name, description, duration, monthly_fee AS fee FROM program WHERE status = 'ACTIVE'");
+        const [programs] = await db.query("SELECT id, name, description, duration, monthly_fee, image_url AS fee FROM program WHERE status = 'ACTIVE'");
         return res.status(200).json({ success: true, programs });
     } catch (error) {
         console.error("get programs error", error.message);

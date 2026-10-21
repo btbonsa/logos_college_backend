@@ -1,10 +1,6 @@
 
 const db = require('../config/db');
 
-/**
- * Create a notification for every active ADMIN.
- * Pass an existing transaction connection when available.
- */
 async function notifyAdmins({
     title,
     message,
@@ -25,7 +21,7 @@ async function notifyAdmins({
         SELECT
             id, ?, ?, ?, ?, ?
         FROM users
-        WHERE role = 'ADMIN'
+        WHERE role IN ('ADMIN', 'SUPER_ADMIN')
           AND status = 'ACTIVE'`,
         [title, message, type, registrationId, paymentId]
     );

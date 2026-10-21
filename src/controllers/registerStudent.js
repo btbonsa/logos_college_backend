@@ -46,17 +46,9 @@ async function createRegistration(req, res) {
 const [result] = await connection.query(
     `INSERT INTO registrations
         (student_id, program_id, registration_number, status)
-     VALUES (?, ?, ?, 'PENDING')`,
+     VALUES (?, ?, ?, 'DRAFT')`,
     [studentId, program_id, registrationNumber]
 );
-
-await notifyAdmins({
-    title: 'New student registration',
-    message: `Registration ${registrationNumber} requires attention.`,
-    type: 'NEW_REGISTRATION',
-    registrationId: result.insertId,
-    connection,
-});
 
 await connection.commit();
         return res.status(201).json({
@@ -67,7 +59,7 @@ await connection.commit();
                 program_id: program_id,
                 course: program[0].name,
                 fee: program[0].monthly_fee,
-                status: "PENDING"
+                status: "DRAFT"
             }
         });
 

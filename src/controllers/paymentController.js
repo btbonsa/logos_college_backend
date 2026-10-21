@@ -23,7 +23,7 @@ async function createPayment(req, res) {
             return res.status(400).json({ message: "payment proof image is required" });
         }
 
-        const [registrations] = await connection.query("SELECT r.id, r.student_id, r.program_id, r.status , p.name As program_name, p.monthly_fee As monthly_fee FROM registrations r INNER JOIN students s ON r.student_id = s.id INNER JOIN program p ON r.program_id = p.id WHERE  s.user_id = ? AND r.status IN ('PENDING', 'PAYMENT_REJECTED')", [studentUserId]);
+        const [registrations] = await connection.query("SELECT r.id, r.student_id, r.program_id, r.status , p.name As program_name, p.monthly_fee As monthly_fee FROM registrations r INNER JOIN students s ON r.student_id = s.id INNER JOIN program p ON r.program_id = p.id WHERE  s.user_id = ? AND r.status IN ('DRAFT', 'PAYMENT_PENDING', 'PAYMENT_REJECTED')", [studentUserId]);
 
         if (registrations.length === 0) {
             await connection.rollback();
@@ -52,7 +52,9 @@ async function createPayment(req, res) {
         const [paymentResult] = await connection.query("INSERT INTO payments (registration_id, payment_method, amount, transaction_references, screenShoot_url, status) VALUES (?, ?, ?, ?, ?, 'PENDING')",
             [registration.id, payment_method, amount, transaction_references, cloudinaryResult.url]);
 
-        await connection.query("UPDATE registrations SET status = 'PAYMENT_PENDING' WHERE id = ?", [registration.id]);
+        if (registration.status === 'DRAFT') {
+            await connection.query("UPDATE registrations SET status = 'PAYMENT_PENDING' WHERE id = ?", [registration.id]);
+        }
 
         await notifyAdmins({
             title: 'New payment submitted',
@@ -102,4 +104,3 @@ async function createPayment(req, res) {
 
 
 module.exports = { createPayment  };
-

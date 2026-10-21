@@ -13,10 +13,8 @@ const {
 
 const router = express.Router();
 
-// Public verification endpoint: no login required
 router.get('/verify/:certificateNumber', verifyCertificate);
 
-// Admin-only endpoints
 router.get('/admin/all', authenticate, authorize('ADMIN', ''), getAllCertificates);
 router.post('/', authenticate, authorize('ADMIN', ''), issueCertificate);
 router.get('/:id/pdf', authenticate, authorize('ADMIN', ''), downloadCertificatePdf);

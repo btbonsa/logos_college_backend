@@ -18,10 +18,8 @@ const {
 
 const router = express.Router();
 
-// Public endpoint: view a published portfolio
 router.get('/public/:slug', getPublicPortfolio);
 
-// Admin and super admin endpoints
 router.get(
     '/admin/all',
     authenticate,

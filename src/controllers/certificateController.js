@@ -65,7 +65,6 @@ function formatDate(value) {
     return String(value).slice(0, 10);
 }
 
-// GET /api/certificates/admin/all
 async function getAllCertificates(req, res) {
     try {
         const [rows] = await pool.execute(
@@ -96,8 +95,6 @@ async function getAllCertificates(req, res) {
     }
 }
 
-// POST /api/certificates
-// Body: { "registration_id": 1, "completion_date": "2026-10-12" }
 async function issueCertificate(req, res) {
     try {
         const registrationId = Number(req.body.registration_id);
@@ -181,8 +178,6 @@ async function issueCertificate(req, res) {
     }
 }
 
-// GET /api/certificates/:id/pdf
-// GET /api/certificates/:id/pdf
 async function downloadCertificatePdf(req, res) {
     try {
         const id = Number(req.params.id);
@@ -250,33 +245,26 @@ async function downloadCertificatePdf(req, res) {
         const pageWidth = doc.page.width;
         const pageHeight = doc.page.height;
 
-        // ── Modern Geometric Blue Corner Frame Border ──
         doc.save();
         
-        // Background canvas fill
         doc.rect(0, 0, pageWidth, pageHeight).fill('#f8fafc');
 
-        // Top-Left Deep Blue Block
         doc.fillColor('#0284c7');
         doc.polygon([0, 0], [180, 0], [0, 110]);
         doc.fill();
 
-        // Top-Left Secondary Accent
         doc.fillColor('#38bdf8');
         doc.polygon([0, 0], [110, 0], [0, 70]);
         doc.fill();
 
-        // Bottom-Right Deep Blue Block
         doc.fillColor('#0284c7');
         doc.polygon([pageWidth, pageHeight], [pageWidth - 180, pageHeight], [pageWidth, pageHeight - 110]);
         doc.fill();
 
-        // Bottom-Right Secondary Accent
         doc.fillColor('#38bdf8');
         doc.polygon([pageWidth, pageHeight], [pageWidth - 110, pageHeight], [pageWidth, pageHeight - 70]);
         doc.fill();
 
-        // Inner crisp outer border lines
         doc.lineWidth(2)
             .strokeColor('#0284c7')
             .rect(20, 20, pageWidth - 40, pageHeight - 40)
@@ -288,8 +276,6 @@ async function downloadCertificatePdf(req, res) {
             .stroke();
 
         doc.restore();
-        // ──────────────────────────────────────────────
-
         doc.fillColor('#1d4ed8')
             .font('Helvetica-Bold')
             .fontSize(30)
@@ -362,7 +348,7 @@ async function downloadCertificatePdf(req, res) {
         doc.font('Helvetica')
             .fontSize(9)
             .fillColor('#4b5563')
-            .text('Scan the QR code to verify this certificate.', 55, 375);
+            .text('Scan the QR code to veiw student portfolio.', 55, 375);
 
         doc.image(qrBuffer, pageWidth - 155, 335, { fit: [90, 90] });
 
@@ -383,7 +369,6 @@ async function downloadCertificatePdf(req, res) {
     }
 }
 
-// GET /api/certificates/verify/:certificateNumber (public)
 async function verifyCertificate(req, res) {
     try {
         const { certificateNumber } = req.params;
@@ -443,7 +428,6 @@ async function verifyCertificate(req, res) {
     }
 }
 
-// PATCH /api/certificates/:id/revoke
 async function revokeCertificate(req, res) {
     try {
         const id = Number(req.params.id);

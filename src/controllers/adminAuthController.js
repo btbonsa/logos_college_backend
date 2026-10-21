@@ -13,7 +13,6 @@ async function adminLogin(req, res) {
             return res.status(400).json({ message: "email and password are required" });
         }
 
-        // Query for users with ADMIN or SUPER_ADMIN role using email
         const [users] = await db.query(
             "SELECT id, phone, email, hash_password, role, status FROM users WHERE email = ? AND role IN ('ADMIN', 'SUPER_ADMIN')",
             [email]

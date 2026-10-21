@@ -1,6 +1,6 @@
 const express = require('express');
 
-const {getPublicprograms} = require('../controllers/programs');
+const { getPublicprograms } = require('../controllers/programs');
 
 const router = express.Router();
 

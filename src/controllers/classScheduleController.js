@@ -12,7 +12,6 @@ const createClassSchedule = async (req, res) => {
       message,
     } = req.body;
 
-    // Validate required fields
     if (!registration_id || !class_start_date) {
       return res.status(400).json({
         success: false,
@@ -25,7 +24,6 @@ const createClassSchedule = async (req, res) => {
 
     await connection.beginTransaction();
 
-    // Check registration
     const [registrations] = await connection.execute(
       `
       SELECT
@@ -66,7 +64,6 @@ const createClassSchedule = async (req, res) => {
 
     const registration = registrations[0];
 
-    // Only approved registrations can receive a class schedule
     if (registration.status !== "REGISTERED") {
       await connection.rollback();
 
@@ -78,7 +75,6 @@ const createClassSchedule = async (req, res) => {
       });
     }
 
-    // Check if a schedule already exists
     const [existingSchedules] = await connection.execute(
       `
       SELECT id
@@ -100,7 +96,6 @@ const createClassSchedule = async (req, res) => {
       });
     }
 
-    // Create schedule
     const [result] = await connection.execute(
       `
       INSERT INTO class_schedules (
